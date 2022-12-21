@@ -1,0 +1,41 @@
+name: Generate charts
+
+on:
+  workflow_dispatch: {}
+  workflow_run:
+    workflows: ["Update prices"]
+    types: [completed]
+    branches: [master]
+  push:
+    branches: [master]
+    paths: ["**/*.ledger"]
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+jobs:
+  generate-charts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: ngalaiko/setup-hledger@v1
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: export metrics
+        working-directory: ./charts/prometheus
+        env:
+          TZ: "Europe/Stockholm"
+        run: python export.py --file=../../main.ledger > ./metrics.prom
+
+      - name: build and deploy
+        working-directory: ./charts/prometheus
+        run: flyctl deploy --remote-only

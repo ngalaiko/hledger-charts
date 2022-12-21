@@ -1,0 +1,2 @@
+basic_auth_users:
+    grafana_cloud: $2a$12$IW52yL3ESfobRPeZ5mWs7OTLp63jG3jllK1IJq25rxTl3A9LTF3R6
